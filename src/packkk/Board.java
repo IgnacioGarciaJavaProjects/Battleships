@@ -17,9 +17,13 @@ public class Board {
 	int numberOfShips; // current number of ships, at the beginning will be the total.
 	
 	public Board(int height, int width) {
+		System.out.println("creating board");
 		this.height = height;
 		this.width = width;
 		this.board = new int[height*width];
+		for(int i = 0; i < board.length; i ++) {
+			board[i] = -1;
+		}
 	}
 	
 	/**
@@ -64,6 +68,7 @@ public class Board {
 				while(direction < ndirections) {
 					dt[direction] = dt[++direction];
 				}
+				direction = dt[r.nextInt(ndirections)];
 			}
 			if(ndirections > 0) {
 				placeShip(resul, health);
@@ -102,7 +107,7 @@ public class Board {
 					return null;
 				}
 				pos = rcToPos(row, col);
-				if(board[pos] != -1) {
+				if(pos  < 0 || board[pos] != -1) {
 					return null;
 				}
 				out[i] = pos;
@@ -117,7 +122,7 @@ public class Board {
 					return null;
 				}
 				pos = rcToPos(row, col);
-				if(board[pos] != -1) {
+				if(pos < 0 || board[pos] != -1) {
 					return null;
 				}
 				out[i] = pos;
@@ -131,7 +136,7 @@ public class Board {
 					return null;
 				}
 				pos = rcToPos(row, col);
-				if(board[pos] != -1) {
+				if(pos >= board.length || board[pos] != -1) {
 					return null;
 				}
 				out[i] = pos;
@@ -146,7 +151,7 @@ public class Board {
 					return null;
 				}
 				pos = rcToPos(row, col);
-				if(board[pos] != -1) {
+				if(pos >= board.length || board[pos] != -1) {
 					return null;
 				}
 				out[i] = pos;
@@ -160,7 +165,7 @@ public class Board {
 					return null;
 				}
 				pos = rcToPos(row, col);
-				if(board[pos] != -1) {
+				if(pos >= board.length || board[pos] != -1) {
 					return null;
 				}
 				out[i] = pos;
@@ -175,7 +180,7 @@ public class Board {
 					return null;
 				}
 				pos = rcToPos(row, col);
-				if(board[pos] != -1) {
+				if(pos >= board.length || board[pos] != -1) {
 					return null;
 				}
 				out[i] = pos;
@@ -189,7 +194,7 @@ public class Board {
 					return null;
 				}
 				pos = rcToPos(row, col);
-				if(board[pos] != -1) {
+				if(pos < 0 || board[pos] != -1) {
 					return null;
 				}
 				out[i] = pos;
@@ -204,7 +209,7 @@ public class Board {
 					return null;
 				}
 				pos = rcToPos(row, col);
-				if(board[pos] != -1) {
+				if(pos < 0 || board[pos] != -1) {
 					return null;
 				}
 				out[i] = pos;
@@ -225,7 +230,7 @@ public class Board {
 	}
 	
 	int rcToPos(int row, int col) {
-		return width * row + col -1;
+		return width * row + col;
 	}
 	
 	public String toString() {
@@ -233,7 +238,12 @@ public class Board {
 		int pos = 0;
 		for(int i = 0; i < height; i ++) {
 			for(int j = 0; j < width; j ++) {
-				sb.append(board[pos]);
+				if(board[pos] == -1) {
+					sb.append(' ');
+				}
+				else {
+					sb.append(board[pos]);
+				}
 				sb.append(" ");
 				pos ++;
 			}
