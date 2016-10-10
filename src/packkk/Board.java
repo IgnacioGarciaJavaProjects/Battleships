@@ -63,6 +63,7 @@ public class Board {
 			int pos = r.nextInt(board.length);
 			int direction = r.nextInt(ndirections);
 			int[] resul = null;
+			// change to dowhile
 			while(ndirections > 0 && (resul = checkAvail(pos, direction, size)) == null) {
 				ndirections --;
 				while(direction < ndirections) {
@@ -122,7 +123,9 @@ public class Board {
 					return null;
 				}
 				pos = rcToPos(row, col);
-				if(pos < 0 || board[pos] != -1) {
+				int pos1 = rcToPos(row + 1, col);
+				int pos2 = rcToPos(row, col - 1);
+				if(pos < 0 || board[pos] != -1 || board[pos1] != -1 || board[pos2] != -1) {
 					return null;
 				}
 				out[i] = pos;
@@ -151,7 +154,9 @@ public class Board {
 					return null;
 				}
 				pos = rcToPos(row, col);
-				if(pos >= board.length || board[pos] != -1) {
+				int pos1 = rcToPos(row - 1, col);
+				int pos2 = rcToPos(row, col - 1);
+				if(pos >= board.length || board[pos] != -1 || board[pos1] != -1 || board[pos2] != -1) {
 					return null;
 				}
 				out[i] = pos;
@@ -180,7 +185,9 @@ public class Board {
 					return null;
 				}
 				pos = rcToPos(row, col);
-				if(pos >= board.length || board[pos] != -1) {
+				int pos1 = rcToPos(row - 1, col);
+				int pos2 = rcToPos(row, col + 1);
+				if(pos >= board.length || board[pos] != -1 || board[pos1] != -1 || board[pos2] != -1) {
 					return null;
 				}
 				out[i] = pos;
@@ -209,7 +216,9 @@ public class Board {
 					return null;
 				}
 				pos = rcToPos(row, col);
-				if(pos < 0 || board[pos] != -1) {
+				int pos1 = rcToPos(row + 1, col);
+				int pos2 = rcToPos(row, col + 1);
+				if(pos < 0 || board[pos] != -1 || board[pos1] != -1 || board[pos2] != -1) {
 					return null;
 				}
 				out[i] = pos;
