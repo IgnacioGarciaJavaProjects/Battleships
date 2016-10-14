@@ -31,8 +31,8 @@ public class Board {
 	protected Random r = new Random();
 	int[] board;
 	int height, width;
-	int numberOfShips; // current number of ships, at the beginning will be the total.
-	
+	//int numberOfShips; // current number of ships, at the beginning will be the total.
+	ShipLinkedList sll;
 	
 	public Board(int height, int width) {
 		System.out.println("creating board");
@@ -42,6 +42,7 @@ public class Board {
 		for(int i = 0; i < board.length; i ++) {
 			board[i] = -1;
 		}
+		sll = new ShipLinkedList();
 	}
 	
 	/**
@@ -59,6 +60,12 @@ public class Board {
 			return 0; // ship already wrecked
 		}
 		else {
+			if(sll.sink(index)) {
+				//numberOfShips --;
+				if(sll.isEmpty()) {
+					System.out.println("No enemy ships left. Congratulations, you won! :)");
+				}
+			}
 			return -- board[index]; // ship attacked!
 		}
 	}
@@ -165,7 +172,7 @@ public class Board {
 		putShip(2, 3);
 		putShip(2, 3);
 		putShip(2, 3);
-		numberOfShips = 6;
+		//numberOfShips = 6;
 	}
 	
 	void putShip(int size, int health) {
@@ -197,6 +204,7 @@ public class Board {
 			if(ndirections > 0) {
 				placeShip(resul, health);
 				System.out.println(this.toString());
+				sll.add(resul);
 				/*Integer hn = remainShips.get(health); 
 				remainShips.put(health, hn == null ? 1 : hn + 1);
 				if(size < shortestShipAlive) {
@@ -396,4 +404,146 @@ public class Board {
 		
 		return sb.toString();
 	}
+}
+
+/**
+ * Linked list of int arrays, which will maintain them ordered by increasing length.
+ * @author nacho
+ *
+ */
+class ShipLinkedList {
+	class ShipLink {
+		ShipLink next, previous;
+		int[] ship;
+		
+		ShipLink(int[] t) {
+			this.ship = t;
+		}
+		
+		int length() {
+			return ship.length;
+		}
+	}
+	
+	private ShipLink head, tail;
+	ShipLink lastShipHit;
+	int numberOfShips;
+	
+	public boolean isEmpty() {
+		return numberOfShips == 0;
+	}
+	
+	/**
+	 * Adds a ship in ascendent order of lengths. For that it uses a linear
+	 * search for the correct place for the ship.
+	 * @param newShip
+	 */
+	public void add(int[] newShip) {
+		int l = newShip.length;
+		if(head == null) {
+			head = tail = new ShipLink(newShip);
+			numberOfShips ++;
+			return;
+		}
+		ShipLink current = head;
+		while(current != null) {
+			if(l <= current.length()) {
+				break;
+			}
+			current = current.next;
+		} 
+		if(current != null) {
+			ShipLink sl = new ShipLink(newShip);
+			if(current.previous != null) {
+				current.previous.next = sl;
+			}
+			sl.previous = current.previous;
+			sl.next = current;
+			current.previous = sl;
+		}
+		else {
+			ShipLink sl = new ShipLink(newShip);
+			tail.next = sl;
+			sl.previous = tail;
+			tail = sl;
+			
+		}
+		numberOfShips ++;
+	}
+	
+	public void remove(ShipLink oldShip) {
+		if(oldShip.previous == null) {
+			head = oldShip.next;
+			head.previous = null;
+			oldShip.next = null;
+		}
+		else if(oldShip.next == null){
+			tail = oldShip.previous;
+			tail.next = null;
+			oldShip.previous = null;
+		}
+		else {
+			oldShip.previous.next = oldShip.next;
+			oldShip.next.previous = oldShip.previous;
+			oldShip.previous = null;
+			oldShip.next = null;
+		}
+		
+		numberOfShips --;
+	}
+	
+	public boolean sink(int pos) {
+		if(lastShipHit != null) {
+			int[] ship = lastShipHit.ship;
+			int i;
+			for(i = 0; i < ship.length; i ++) {
+				if(ship[i] == pos) {
+					ship[i] = -1;
+					break;
+				}
+			}
+			if(i >= ship.length) {
+				lastShipHit = lookUpSinkShip(pos);
+			}
+		}
+		else {
+			lastShipHit = lookUpSinkShip(pos);
+		}
+		if(isSunk(lastShipHit)) {
+			remove(lastShipHit);
+			lastShipHit = null;
+			return true;
+		}
+		return false;
+	}
+	
+	ShipLink lookUpSinkShip(int pos) {
+		ShipLink current = head;
+		while(current != null) {
+			int[] ship = current.ship;
+			for(int i = 0; i < ship.length; i ++) {
+				if(ship[i] == pos) {
+					ship[i] = -1;
+					return current;
+				}
+			}
+			current = current.next;
+		}
+		return null;
+	}
+	
+	boolean isSunk(ShipLink sp) {
+		int[] ship = sp.ship;
+		int total = 0;
+		for(int i = 0; i < ship.length; i ++) {
+			if(ship[i] == -1) {
+				total ++;
+			}
+		}
+		return total == ship.length;
+	}
+	
+	//private ShipLink next() 
+	
+	
 }
