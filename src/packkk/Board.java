@@ -8,12 +8,27 @@ import java.util.*;
  * stored as a simple array in memory.
  * A number -1 is water, 0 is a sunk ship. A different number means the strength/health of that part
  * of the ship. The ships can be short or long, it will depend on various factors.
+ * In this class we need a structure showing us the coordinates of the ships.
+ * we don't want it to be expensive in space, so it will be in time.
+ * Every time we hit a ship we can call a function that looks for the ship
+ * in an array of ships, this is, a two-dimension array. Since we are going
+ * to be searching blindly from the beginning of the array and every ship
+ * can have different length, we are going to use a linked list of arrays
+ * or ships. Also we will hold a ship variable with the most likely ship
+ * to be attacked next, this is the last attacked unless it were sunk.
+ * In case the ship is sunk we make the variable equal to null and remove
+ * the array from the linked list.
+ * We can guess most of the times we won't need to search.
+ * Every time a part of a ship is sunk we can equal that index to -1. The
+ * rest of the indexes of the ship contain the index of the board where that
+ * ship is situated.
+ 
  * @author nacho
  *
  */
 
 public class Board {
-	private Random r = new Random();
+	protected Random r = new Random();
 	int[] board;
 	int height, width;
 	int numberOfShips; // current number of ships, at the beginning will be the total.
@@ -91,60 +106,7 @@ public class Board {
 		}
 	}
 	
-	void intelAttack() {
-		if(attackingPos != -1) {
-			if(board[attackingPos] > 0) {
-				attack(attackingPos);
-			}
-			else {
-				if(attackDirection > -1) {
-					int newPos = advance(attackingPos, attackDirection);
-					if(!checkBorders(newPos) || lengthShip >= longestAliveShip || attack(newPos) == -1) {
-						attackDirection = -2;
-						attackingPos = -1; 
-						remainShips.put(lengthShip, remainShips.get(lengthShip) -1);
-						lengthShip = 0;
-						
-						if(remainShips.get(lengthShip) == 0 && lengthShip == longestAliveShip) {
-							//longestAliveShip = max key of the map
-							longestAliveShip = maxPos((Integer[])(remainShips.keySet().toArray()));
-						}
-					}
-					else {
-						lengthShip ++;
-					}
-					
-				}
-				else {
-					if(attackDirection == -2) {
-						for(int i = 0; i < 8; i ++) {
-							attackDirections[i] = i;
-							nAtadir = 8;
-						}
-						attackDirection = -1;
-					}
-					
-					attackDirection = chooseDirection(attackingPos);
-					int newPos = advance(attackingPos, attackDirection);
-					if(attack(newPos) == -1) {
-						attackDirection = -1;
-					}
-					else {
-						attackingPos = newPos;
-						lengthShip ++;
-					}
-				}
-			}
-			
-		}
-		else {
-			int squareAttacked = squaresToAttack[r.nextInt(remainingSquares)];
-			if(attack(squareAttacked) != -1) {
-			    attackingPos = squareAttacked;
-			}
-		}
-		
-	}
+	
 	
 	boolean checkBorders(int pos) {
 		int row = posToRow(pos);
@@ -235,14 +197,14 @@ public class Board {
 			if(ndirections > 0) {
 				placeShip(resul, health);
 				System.out.println(this.toString());
-				Integer hn = remainShips.get(health); 
+				/*Integer hn = remainShips.get(health); 
 				remainShips.put(health, hn == null ? 1 : hn + 1);
 				if(size < shortestShipAlive) {
 					shortestShipAlive = size;
 				}
 				if(size > longestAliveShip) {
 					longestAliveShip = size;
-				}
+				}*/
 				return;
 			}
 			trials ++;

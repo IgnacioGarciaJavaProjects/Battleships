@@ -1,6 +1,13 @@
 package packkk;
 import java.util.*;
 
+/**
+* We have a lack here: We need either the player to say a ship is sunk
+* or a structure with the knowledge of the size and situation of the ships.
+* Finally we are going to need the same structure as in Board class.
+* Every time the shortest or longest ship is sunk we will need to look
+* for the new shortest and longest, respectively.
+*/
 public class PlayerBoard extends Board
 {
 	TreeMap<Integer, Integer> remainShips = new TreeMap<>();
@@ -25,6 +32,65 @@ public class PlayerBoard extends Board
 	int attackDirection = -2;
 	int remainingSquares;
 	int[] squaresToAttack;
+	
+	void intelAttack() {
+		if(attackingPos != -1) {
+			if(board[attackingPos] > 0) {
+				attack(attackingPos);
+			}
+			else {
+				if(attackDirection > -1) {
+					int newPos = advance(attackingPos, attackDirection);
+					if(!checkBorders(newPos) || lengthShip >= longestAliveShip || attack(newPos) == -1) {
+						attackDirection = -2;
+						attackingPos = -1; 
+						remainShips.put(lengthShip, remainShips.get(lengthShip) -1);
+						numberOfShips --;
+						if(numberOfShips == 0) {
+							System.out.println("Your navy is sunk. You lost!");
+						}
+						lengthShip = 0;
+
+						if(remainShips.get(lengthShip) == 0 && lengthShip == longestAliveShip) {
+							//longestAliveShip = max key of the map
+							longestAliveShip = maxPos((Integer[])(remainShips.keySet().toArray()));
+						}
+					}
+					else {
+						lengthShip ++;
+					}
+
+				}
+				else {
+					if(attackDirection == -2) {
+						for(int i = 0; i < 8; i ++) {
+							attackDirections[i] = i;
+							nAtadir = 8;
+						}
+						attackDirection = -1;
+					}
+
+					attackDirection = chooseDirection(attackingPos);
+					int newPos = advance(attackingPos, attackDirection);
+					if(attack(newPos) == -1) {
+						attackDirection = -1;
+					}
+					else {
+						attackingPos = newPos;
+						lengthShip ++;
+					}
+				}
+			}
+
+		}
+		else {
+			int squareAttacked = squaresToAttack[r.nextInt(remainingSquares)];
+			if(attack(squareAttacked) != -1) {
+			    attackingPos = squareAttacked;
+			}
+		}
+
+	}
 	
 	int chooseDirection(int sq) {
 		int dChosen = -1; 
