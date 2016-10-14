@@ -1,6 +1,7 @@
 package packkk;
 
 import java.util.Random;
+import java.util.*;
 
 /**
  * This class represents the board of the ships game. It is a two-dimensional integer array
@@ -12,9 +13,11 @@ import java.util.Random;
  */
 
 public class Board {
+	private Random r = new Random();
 	int[] board;
 	int height, width;
 	int numberOfShips; // current number of ships, at the beginning will be the total.
+	
 	
 	public Board(int height, int width) {
 		System.out.println("creating board");
@@ -41,8 +44,223 @@ public class Board {
 			return 0; // ship already wrecked
 		}
 		else {
-			return board[index] --; // ship attacked!
+			return -- board[index]; // ship attacked!
 		}
+	}
+	
+	void autoAttack () {
+		for(int i = 0; i < board.length; i++) {
+			System.out.println(attack(i));
+		}
+	}
+	
+	
+	
+	int maxPos(Integer[] t) {
+		int max = 0;
+		for(int i = 0; i < t.length; i ++) {
+			if(t[i] > max) {
+				max = t[i];
+			}
+		}
+		return max;
+	}
+	
+	int advance(int pos, int direc) {
+		int row = posToRow(pos);
+		int col = posToCol(pos);
+		switch(direc) {
+			case 0:
+				return rcToPos(row-1, col);
+			case 1:
+				return rcToPos(row - 1, col + 1);
+			case 2:
+				return rcToPos(row, col + 1);
+			case 3:
+				return rcToPos(row + 1, col);
+			case 4:
+				return rcToPos(row + 1, col);
+			case 5:
+				return rcToPos(row + 1, col - 1);
+			case 6:
+				return rcToPos(row, col - 1);
+			case 7:
+				return rcToPos(row - 1, col - 1);
+			default:
+			return pos;
+		}
+	}
+	
+	void intelAttack() {
+		if(attackingPos != -1) {
+			if(board[attackingPos] > 0) {
+				attack(attackingPos);
+			}
+			else {
+				if(attackDirection > -1) {
+					int newPos = advance(attackingPos, attackDirection);
+					if(!checkBorders(newPos) || lengthShip >= longestAliveShip || attack(newPos) == -1) {
+						attackDirection = -2;
+						attackingPos = -1; 
+						remainShips.put(lengthShip, remainShips.get(lengthShip) -1);
+						lengthShip = 0;
+						
+						if(remainShips.get(lengthShip) == 0 && lengthShip == longestAliveShip) {
+							//longestAliveShip = max key of the map
+							longestAliveShip = maxPos((Integer[])(remainShips.keySet().toArray()));
+						}
+					}
+					else {
+						lengthShip ++;
+					}
+					
+				}
+				else {
+					if(attackDirection == -2) {
+						for(int i = 0; i < 8; i ++) {
+							attackDirections[i] = i;
+							nAtadir = 8;
+						}
+						attackDirection = -1;
+					}
+					
+					attackDirection = chooseDirection(attackingPos);
+					int newPos = advance(attackingPos, attackDirection);
+					if(attack(newPos) == -1) {
+						attackDirection = -1;
+					}
+					else {
+						attackingPos = newPos;
+						lengthShip ++;
+					}
+				}
+			}
+			
+		}
+		else {
+			int squareAttacked = squaresToAttack[r.nextInt(remainingSquares)];
+			if(attack(squareAttacked) != -1) {
+			    attackingPos = squareAttacked;
+			}
+		}
+		
+	}
+	
+	boolean checkBorders(int pos) {
+		int row = posToRow(pos);
+		int col = posToCol(pos);
+		if(pos < 0 || pos >= board.length || row < 0 || col < 0 || row >= height ||col >= width) {
+			return false;
+		}
+		return true;
+	}
+	
+	/*int[] removeCorners(int row, int col) {
+		int i = 1;
+		if(row > shortestShipAlive) {
+			//deletePos(0);
+			//de
+		}
+		while(i<8) {
+			
+		}
+		int[] toRemove = new int[8];
+		TreeSet<int> ts = new TreeSet<>();
+		int i = 0;
+		if(row < shortestShipAlive) {
+			toRemove[i ++] = 0;
+			toRemove[i ++] = 1;
+			toRemove[i ++] = 7;
+		}
+	}*/
+	
+	int chooseDirection(int sq) {
+		int dChosen = -1; 
+		do {
+		    int row = posToRow(sq);
+			int col = posToCol(sq);
+		    dChosen = extractPos(r.nextInt(nAtadir), attackDirections, nAtadir);
+			nAtadir --;
+			
+			switch(dChosen) {
+				case 0:
+					// we need to take into account first if there are 
+					// short ships left, in order to set the max distance
+					// from the borders of the board where to look.
+					// idea: variable shortestShipAlive.
+					// so if row < 0 + shortestShipAlive-1 then we must
+					// delete that direction from the attackdirections.
+					// same if row > height - shortestShipAlive.
+					if(row < shortestShipAlive) {			
+						continue;
+					}
+					break;
+				case 1: 
+					if(row < shortestShipAlive || col > width - shortestShipAlive) {
+						continue;
+					}
+					break;
+					
+				case 2: 
+					if(col > width - shortestShipAlive) {
+						continue;
+					}
+					break;
+					
+				case 3: 
+					if(row > height - shortestShipAlive || col > width - shortestShipAlive) {
+						continue;
+					}
+					break;
+					
+				case 4: 
+					if(row > height - shortestShipAlive) {
+						continue;
+					}
+					break;
+					
+				case 5: 
+					if(row > height - shortestShipAlive || col < shortestShipAlive) {
+						continue;
+					}
+					break;
+					
+				case 6: 
+					if(col < shortestShipAlive) {
+						continue;
+					}
+					break;
+					
+				case 7: 
+					if(row < shortestShipAlive || col < shortestShipAlive) {
+						continue;
+					}
+					break;
+				
+			}
+			
+		} while(nAtadir > 0);
+		return dChosen;
+	}
+	
+	void deletePos(int pos, int[] t, int limit) {
+		while(pos < limit) {
+			t[pos] = t[pos++];
+		}
+	}
+	
+	void deletePos(int pos,int quantity, int[] t, int limit) {
+		while(pos < limit) {
+			t[pos] = t[pos + quantity];
+		}
+	}
+	
+	int extractPos(int pos, int[] t, int limit) {
+		int temp = t[pos];
+		while(pos < limit) {
+			t[pos] = t[pos++];
+		}
+		return temp;
 	}
 	
 	void autoShips() {
@@ -52,27 +270,46 @@ public class Board {
 		putShip(2, 3);
 		putShip(2, 3);
 		putShip(2, 3);
+		numberOfShips = 6;
 	}
 	
 	void putShip(int size, int health) {
 		int trials = 0;
-		Random r = new Random();
+		
 		while(trials < 20) {
 			int ndirections = 8;
 			int[] dt = {0,1,2,3,4,5,6,7};
-			int pos = r.nextInt(board.length);
+			
 			int direction = r.nextInt(ndirections);
 			int[] resul = null;
 			// change to dowhile
-			while(ndirections > 0 && (resul = checkAvail(pos, direction, size)) == null) {
-				ndirections --;
+			do 
+			 {
+				 int pos = 0;
+				 do {
+					 pos = r.nextInt(board.length);
+				 } while(board[pos] != -1);
+				 resul = checkAvail(pos, direction, size);
+				 if(resul != null) {
+				     break;
+				 }
+				 ndirections --;
 				while(direction < ndirections) {
 					dt[direction] = dt[++direction];
 				}
 				direction = dt[r.nextInt(ndirections)];
-			}
+			 } while(ndirections > 0);
 			if(ndirections > 0) {
 				placeShip(resul, health);
+				System.out.println(this.toString());
+				Integer hn = remainShips.get(health); 
+				remainShips.put(health, hn == null ? 1 : hn + 1);
+				if(size < shortestShipAlive) {
+					shortestShipAlive = size;
+				}
+				if(size > longestAliveShip) {
+					longestAliveShip = size;
+				}
 				return;
 			}
 			trials ++;
@@ -244,6 +481,7 @@ public class Board {
 	
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
+		sb.append("\n==========================================\n");
 		int pos = 0;
 		for(int i = 0; i < height; i ++) {
 			for(int j = 0; j < width; j ++) {
@@ -258,6 +496,8 @@ public class Board {
 			}
 			sb.append("\n");
 		}
+		sb.append("==========================================\n");
+		
 		
 		return sb.toString();
 	}
