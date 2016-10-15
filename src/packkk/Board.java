@@ -33,6 +33,7 @@ public class Board {
 	int height, width;
 	//int numberOfShips; // current number of ships, at the beginning will be the total.
 	ShipLinkedList sll;
+	boolean sunk;
 	
 	public Board(int height, int width) {
 		System.out.println("creating board");
@@ -61,13 +62,15 @@ public class Board {
 			return 0; // ship already wrecked
 		}
 		else {
-			if(sll.sink(index)) {
+			board[index] --;
+			if(board[index] == 0 && sll.sink(index)) {
 				//numberOfShips --;
+				sunk = true;
 				if(sll.isEmpty()) {
 					System.out.println("No enemy ships left. Congratulations, you won! :)");
 				}
 			}
-			return -- board[index]; // ship attacked!
+			return board[index]; // ship attacked!
 		}
 	}
 	
@@ -147,23 +150,49 @@ public class Board {
 	
 	
 	void deletePos(int pos, int[] t, int limit) {
-		while(pos < limit) {
-			t[pos] = t[pos++];
+		while(pos < limit - 1) {
+			t[pos] = t[++pos];
 		}
 	}
 	
 	void deletePos(int pos,int quantity, int[] t, int limit) {
-		while(pos < limit) {
+		while(pos < limit - 1) {
 			t[pos] = t[pos + quantity];
 		}
 	}
 	
 	int extractPos(int pos, int[] t, int limit) {
 		int temp = t[pos];
-		while(pos < limit) {
-			t[pos] = t[pos++];
+		while(pos < limit - 1) {
+			t[pos] = t[++pos];
 		}
 		return temp;
+	}
+	
+	
+	
+	void printArray(int[] t) {
+		for(int i = 0; i < t.length; i ++) {
+			System.out.print(t[i] + " ");
+		}
+		System.out.println();
+	}
+	
+	int dicotomicSearch(int[] t, int v) {
+		int a = 0, b = t.length, m = 0;
+		while(a < b) {
+			if(t[m] == v) {
+				return m;
+			}
+			if(v < t[m]) {
+				b = m;
+			}
+			else {
+				a = m;
+			}
+			m = (a + b) / 2;
+		}
+		return -1;
 	}
 	
 	void autoShips() {
@@ -187,7 +216,7 @@ public class Board {
 			int direction = r.nextInt(ndirections);
 			int[] resul = null;
 			// change to dowhile
-			do 
+			while(ndirections > 0) 
 			 {
 				 int pos = 0;
 				 do {
@@ -202,7 +231,7 @@ public class Board {
 					dt[direction] = dt[++direction];
 				}
 				direction = dt[r.nextInt(ndirections)];
-			 } while(ndirections > 0);
+			 }
 			if(ndirections > 0) {
 				placeShip(resul, health);
 				System.out.println(this.toString());
@@ -389,6 +418,7 @@ public class Board {
 		sb.append("\n==========================================\n");
 		int pos = 0;
 		for(int i = 0; i < height; i ++) {
+			sb.append('|');
 			for(int j = 0; j < width; j ++) {
 				if(board[pos] == -1) {
 					sb.append(' ');
@@ -399,6 +429,7 @@ public class Board {
 				sb.append(" ");
 				pos ++;
 			}
+			sb.append('|');
 			sb.append("\n");
 		}
 		sb.append("==========================================\n");
@@ -432,6 +463,7 @@ class ShipLinkedList {
 	int numberOfShips;
 	int shortestAliveShip;
 	int longestAliveShip;
+	boolean sunk;
 	//boolean maxminShips;
 	
 	public boolean isEmpty() {
@@ -456,20 +488,25 @@ class ShipLinkedList {
 			return;
 		}
 		ShipLink current = head;
-		while(current != null) {
-			if(l <= current.length()) {
-				break;
-			}
+		while(current != null && l > current.length()) {
+			//if(l >= current.length()) {
+				//break;
+			//}
 			current = current.next;
 		} 
 		if(current != null) {
 			ShipLink sl = new ShipLink(newShip);
-			if(current.previous != null) {
-				current.previous.next = sl;
+			if(current.previous == null) {
+				head.previous = sl;
+				sl.next = head;
+				head = sl;
 			}
-			sl.previous = current.previous;
-			sl.next = current;
-			current.previous = sl;
+			else {
+				current.previous.next = sl;
+				sl.previous = current.previous;
+				sl.next = current;
+				current.previous = sl;
+			}
 		}
 		else {
 			ShipLink sl = new ShipLink(newShip);
@@ -513,6 +550,7 @@ class ShipLinkedList {
 		if(lastShipHit != null) {
 			int[] ship = lastShipHit.ship;
 			int i;
+			
 			for(i = 0; i < ship.length; i ++) {
 				if(ship[i] == pos) {
 					ship[i] = -1;
@@ -527,6 +565,7 @@ class ShipLinkedList {
 			lastShipHit = lookUpSinkShip(pos);
 		}
 		if(isSunk(lastShipHit)) {
+			sunk = true;
 			remove(lastShipHit);
 			lastShipHit = null;
 			return true;
@@ -535,10 +574,13 @@ class ShipLinkedList {
 	}
 	
 	ShipLink lookUpSinkShip(int pos) {
+		System.out.println("lookupsink pos = " + pos);
 		ShipLink current = head;
 		while(current != null) {
+			System.out.println("current = " + current);
 			int[] ship = current.ship;
 			for(int i = 0; i < ship.length; i ++) {
+				System.out.println("ship["+i+"] = " + ship[i]);
 				if(ship[i] == pos) {
 					ship[i] = -1;
 					return current;
@@ -546,6 +588,7 @@ class ShipLinkedList {
 			}
 			current = current.next;
 		}
+		System.out.println("returning current = " + current);
 		return null;
 	}
 	

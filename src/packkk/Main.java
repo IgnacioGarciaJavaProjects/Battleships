@@ -6,10 +6,12 @@ public class Main {
 		System.out.println("what");
 		//Board b = new Board(10, 10);
 		PlayerBoard pb = new PlayerBoard(10, 10);
+		
 		//b.autoShips();
 		pb.autoShips();
 		System.out.println(pb.toString());
 		while(!pb.sll.isEmpty()) {
+			//pb.intelAttack();
 			pb.intelAttack();
 			System.out.println(pb.toString());
 		}

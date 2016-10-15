@@ -21,6 +21,8 @@ public class PlayerBoard extends Board
 	int attackDirection = -2;
 	int remainingSquares;
 	int[] squaresToAttack;
+	int inipos;
+	
 	
 	PlayerBoard(int height, int width) {
 		super(height, width);
@@ -38,15 +40,40 @@ public class PlayerBoard extends Board
 	void intelAttack() {
 		if(attackingPos != -1) {
 			if(board[attackingPos] > 0) {
-				attack(attackingPos);
+				System.out.println("not 0");
+				if(attack(attackingPos) == 0) {
+					deletePos(dicotomicSearch(squaresToAttack, attackingPos), squaresToAttack, remainingSquares);
+					remainingSquares --;
+					System.out.println("not sunk");
+					int i = 0;
+					while(i < 100) {
+						System.out.println("not sunk");
+						i++;
+					}
+					if(sunk) {
+						
+						while(i < 10000) {
+							System.out.println("sunk");
+							i++;
+						}
+						attackDirection = -2;
+						attackingPos = -1; 
+						if(sll.isEmpty()) {
+							System.out.println("Your navy is sunk. You lost!");
+						}
+						sunk = false;
+					}
+				}
 			}
 			else {
+				System.out.println("yes 0");
 				if(attackDirection > -1) {
 					int newPos = advance(attackingPos, attackDirection);
 					
 					if(!checkBorders(newPos) || lengthShip >= sll.longestAliveShip || attack(newPos) == -1) {
-						attackDirection = -2;
-						attackingPos = -1; 
+						//
+						attackingPos = inipos;
+						attackDirection = invertDirection(attackDirection);
 						//remainShips.put(lengthShip, remainShips.get(lengthShip) -1);
 						//numberOfShips --;
 						//if(numberOfShips == 0) {
@@ -89,20 +116,36 @@ public class PlayerBoard extends Board
 		else {
 			int squareAttacked = squaresToAttack[r.nextInt(remainingSquares)];
 			if(attack(squareAttacked) != -1) {
+				inipos = squareAttacked;
 			    attackingPos = squareAttacked;
+			}
+			else {
+				deletePos(squareAttacked, squaresToAttack, remainingSquares);
+				remainingSquares --;
 			}
 		}
 
 	}
 	
+	int invertDirection(int d) {
+		if(d == 7) {
+			return 3;
+		}
+		else {
+			return d + 4;
+		}
+	}
+	
 	int chooseDirection(int sq) {
 		int dChosen = -1; 
-		do {
-		    int row = posToRow(sq);
-			int col = posToCol(sq);
-		    dChosen = extractPos(r.nextInt(nAtadir), attackDirections, nAtadir);
-			nAtadir --;
-			
+		int row = posToRow(sq);
+		int col = posToCol(sq);
+		dChosen = extractPos(r.nextInt(nAtadir), attackDirections, nAtadir);
+		nAtadir --;
+		while(nAtadir > 0) {
+			printArray(attackDirections);
+			System.out.println("Shortestship = " + sll.shortestAliveShip);
+			System.out.println("row = " + row + " sq = " + sq + " natadir = " + nAtadir + " direc chosen: " + dChosen);
 			switch(dChosen) {
 				case 0:
 					// we need to take into account first if there are 
@@ -112,56 +155,58 @@ public class PlayerBoard extends Board
 					// so if row < 0 + shortestShipAlive-1 then we must
 					// delete that direction from the attackdirections.
 					// same if row > height - shortestShipAlive.
-					if(row < sll.shortestAliveShip) {			
-						continue;
+					if(row >= sll.shortestAliveShip) {			
+						return dChosen;
 					}
 					break;
 				case 1: 
-					if(row < sll.shortestAliveShip || col > width - sll.shortestAliveShip) {
-						continue;
+					if(row >= sll.shortestAliveShip && col <= width - sll.shortestAliveShip) {
+						return dChosen;
 					}
 					break;
 					
 				case 2: 
-					if(col > width - sll.shortestAliveShip) {
-						continue;
+					if(col <= width - sll.shortestAliveShip) {
+						return dChosen;
 					}
 					break;
 					
 				case 3: 
-					if(row > height - sll.shortestAliveShip || col > width - sll.shortestAliveShip) {
-						continue;
+					if(row <= height - sll.shortestAliveShip && col <= width - sll.shortestAliveShip) {
+						return dChosen;
 					}
 					break;
 					
 				case 4: 
-					if(row > height - sll.shortestAliveShip) {
-						continue;
+					if(row <= height - sll.shortestAliveShip) {
+						return dChosen;
 					}
 					break;
 					
 				case 5: 
-					if(row > height - sll.shortestAliveShip || col < sll.shortestAliveShip) {
-						continue;
+					if(row <= height - sll.shortestAliveShip && col >= sll.shortestAliveShip) {
+						return dChosen;
 					}
 					break;
 					
 				case 6: 
-					if(col < sll.shortestAliveShip) {
-						continue;
+					if(col >= sll.shortestAliveShip) {
+						return dChosen;
 					}
 					break;
 					
 				case 7: 
-					if(row < sll.shortestAliveShip || col < sll.shortestAliveShip) {
-						continue;
+					if(row >= sll.shortestAliveShip && col >= sll.shortestAliveShip) {
+						return dChosen;
 					}
 					break;
-				
 			}
-			
-		} while(nAtadir > 0);
-		return dChosen;
+			//return dChosen;
+			dChosen = extractPos(r.nextInt(nAtadir), attackDirections, nAtadir);
+			nAtadir --;
+		} 
+		return -1;
+		//return dChosen;
 	}
 	
 	/*void putShip(int size, int health) {
