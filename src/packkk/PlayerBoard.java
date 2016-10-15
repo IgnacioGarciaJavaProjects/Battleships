@@ -10,28 +10,30 @@ import java.util.*;
 */
 public class PlayerBoard extends Board
 {
-	TreeMap<Integer, Integer> remainShips = new TreeMap<>();
+	//TreeMap<Integer, Integer> remainShips = new TreeMap<>();
 	int attackDirections[] = new int[8];
 	int nAtadir;
-	int shortestShipAlive;
+	//int shortestShipAlive;
 	int attackingPos = -1;
 	int lengthShip;
-	int longestAliveShip;
+	//int longestAliveShip;
+
+	int attackDirection = -2;
+	int remainingSquares;
+	int[] squaresToAttack;
 	
 	PlayerBoard(int height, int width) {
 		super(height, width);
+		squaresToAttack = new int[board.length];
 		for(int i = 0; i < board.length; i ++) {
 			board[i] = -1;
 			//playerBoard[i] = -1;
 			remainingSquares = board.length;
 			squaresToAttack[i] = i;
 		}
-		this.shortestShipAlive = board.length;
+		//this.shortestShipAlive = board.length;
 	}
 	
-	int attackDirection = -2;
-	int remainingSquares;
-	int[] squaresToAttack;
 	
 	void intelAttack() {
 		if(attackingPos != -1) {
@@ -41,20 +43,21 @@ public class PlayerBoard extends Board
 			else {
 				if(attackDirection > -1) {
 					int newPos = advance(attackingPos, attackDirection);
-					if(!checkBorders(newPos) || lengthShip >= longestAliveShip || attack(newPos) == -1) {
+					
+					if(!checkBorders(newPos) || lengthShip >= sll.longestAliveShip || attack(newPos) == -1) {
 						attackDirection = -2;
 						attackingPos = -1; 
-						remainShips.put(lengthShip, remainShips.get(lengthShip) -1);
-						numberOfShips --;
-						if(numberOfShips == 0) {
-							System.out.println("Your navy is sunk. You lost!");
-						}
-						lengthShip = 0;
+						//remainShips.put(lengthShip, remainShips.get(lengthShip) -1);
+						//numberOfShips --;
+						//if(numberOfShips == 0) {
+							//System.out.println("Your navy is sunk. You lost!");
+						//}
+						//lengthShip = 0;
 
-						if(remainShips.get(lengthShip) == 0 && lengthShip == longestAliveShip) {
+						/*if(remainShips.get(lengthShip) == 0 && lengthShip == longestAliveShip) {
 							//longestAliveShip = max key of the map
 							longestAliveShip = maxPos((Integer[])(remainShips.keySet().toArray()));
-						}
+						}*/
 					}
 					else {
 						lengthShip ++;
@@ -109,48 +112,48 @@ public class PlayerBoard extends Board
 					// so if row < 0 + shortestShipAlive-1 then we must
 					// delete that direction from the attackdirections.
 					// same if row > height - shortestShipAlive.
-					if(row < shortestShipAlive) {			
+					if(row < sll.shortestAliveShip) {			
 						continue;
 					}
 					break;
 				case 1: 
-					if(row < shortestShipAlive || col > width - shortestShipAlive) {
+					if(row < sll.shortestAliveShip || col > width - sll.shortestAliveShip) {
 						continue;
 					}
 					break;
 					
 				case 2: 
-					if(col > width - shortestShipAlive) {
+					if(col > width - sll.shortestAliveShip) {
 						continue;
 					}
 					break;
 					
 				case 3: 
-					if(row > height - shortestShipAlive || col > width - shortestShipAlive) {
+					if(row > height - sll.shortestAliveShip || col > width - sll.shortestAliveShip) {
 						continue;
 					}
 					break;
 					
 				case 4: 
-					if(row > height - shortestShipAlive) {
+					if(row > height - sll.shortestAliveShip) {
 						continue;
 					}
 					break;
 					
 				case 5: 
-					if(row > height - shortestShipAlive || col < shortestShipAlive) {
+					if(row > height - sll.shortestAliveShip || col < sll.shortestAliveShip) {
 						continue;
 					}
 					break;
 					
 				case 6: 
-					if(col < shortestShipAlive) {
+					if(col < sll.shortestAliveShip) {
 						continue;
 					}
 					break;
 					
 				case 7: 
-					if(row < shortestShipAlive || col < shortestShipAlive) {
+					if(row < sll.shortestAliveShip || col < sll.shortestAliveShip) {
 						continue;
 					}
 					break;
@@ -161,7 +164,7 @@ public class PlayerBoard extends Board
 		return dChosen;
 	}
 	
-	void putShip(int size, int health) {
+	/*void putShip(int size, int health) {
 		int trials = 0;
 		
 		while(trials < 20) {
@@ -201,6 +204,13 @@ public class PlayerBoard extends Board
 				return;
 			}
 			trials ++;
+		}
+	}*/
+	
+	void placeShip(int[] places, int health) {
+		int size = places.length;
+		for(int i = 0; i < places.length; i ++) {
+			board[places[i]] = health;
 		}
 	}
 	

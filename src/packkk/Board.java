@@ -43,6 +43,7 @@ public class Board {
 			board[i] = -1;
 		}
 		sll = new ShipLinkedList();
+		sll.shortestAliveShip = board.length;
 	}
 	
 	/**
@@ -172,6 +173,7 @@ public class Board {
 		putShip(2, 3);
 		putShip(2, 3);
 		putShip(2, 3);
+		sll.takeShortLong();
 		//numberOfShips = 6;
 	}
 	
@@ -428,9 +430,17 @@ class ShipLinkedList {
 	private ShipLink head, tail;
 	ShipLink lastShipHit;
 	int numberOfShips;
+	int shortestAliveShip;
+	int longestAliveShip;
+	//boolean maxminShips;
 	
 	public boolean isEmpty() {
 		return numberOfShips == 0;
+	}
+	
+	public void takeShortLong() {
+		shortestAliveShip = head.length();
+		longestAliveShip = tail.length();
 	}
 	
 	/**
@@ -473,14 +483,21 @@ class ShipLinkedList {
 	
 	public void remove(ShipLink oldShip) {
 		if(oldShip.previous == null) {
-			head = oldShip.next;
-			head.previous = null;
-			oldShip.next = null;
+			if(oldShip.next == null) {
+				head = tail = null;
+			}
+			else {
+				head = oldShip.next;
+				head.previous = null;
+				oldShip.next = null;
+				shortestAliveShip = head.length();
+			}
 		}
-		else if(oldShip.next == null){
+		else if(oldShip.next == null) {
 			tail = oldShip.previous;
 			tail.next = null;
 			oldShip.previous = null;
+			longestAliveShip = tail.length();
 		}
 		else {
 			oldShip.previous.next = oldShip.next;
