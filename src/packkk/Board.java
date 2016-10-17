@@ -1,27 +1,18 @@
 package packkk;
 
 import java.util.Random;
-import java.util.*;
+import java.util.*; 
 
 /**
  * This class represents the board of the ships game. It is a two-dimensional integer array
- * stored as a simple array in memory.
+ * stored as a simple array in memory, belonging to the computer, against
+ * which the player will play
  * A number -1 is water, 0 is a sunk ship. A different number means the strength/health of that part
  * of the ship. The ships can be short or long, it will depend on various factors.
- * In this class we need a structure showing us the coordinates of the ships.
- * we don't want it to be expensive in space, so it will be in time.
- * Every time we hit a ship we can call a function that looks for the ship
- * in an array of ships, this is, a two-dimension array. Since we are going
- * to be searching blindly from the beginning of the array and every ship
- * can have different length, we are going to use a linked list of arrays
- * or ships. Also we will hold a ship variable with the most likely ship
- * to be attacked next, this is the last attacked unless it were sunk.
- * In case the ship is sunk we make the variable equal to null and remove
- * the array from the linked list.
- * We can guess most of the times we won't need to search.
- * Every time a part of a ship is sunk we can equal that index to -1. The
- * rest of the indexes of the ship contain the index of the board where that
- * ship is situated.
+ * We maintain various structures: 
+ * - the integer array (the sea)
+ * - a linked list of ships. A ship is a vector with the coordinates
+ * of each part of the ship in the sea.
  
  * @author nacho
  *
@@ -29,12 +20,17 @@ import java.util.*;
 
 public class Board {
 	protected Random r = new Random();
-	int[] board;
-	int height, width;
+	int[] board; // sea or battlefield
+	int height, width; // height and width of the battlefield
 	//int numberOfShips; // current number of ships, at the beginning will be the total.
-	ShipLinkedList sll;
-	boolean sunk;
+	ShipLinkedList sll; //linked list of this board's ships
+	boolean sunk; // true when a ship is sunk
 	
+	/**
+	* Constructor for this class.
+	* @param height Height of the board
+	* @param width Width of the board
+	*/
 	public Board(int height, int width) {
 		System.out.println("creating board");
 		this.height = height;
@@ -48,13 +44,15 @@ public class Board {
 	}
 	
 	/**
-	 * function to attack in a square of the board
+	 * function to attack in a square of the board. Makes sunk = true
+	 * if the ship was totally sunk.
 	 * @param index the index to attack
 	 * @return -1 when the attack hits water; 0 when hits an already wrecked part of a ship;
 	 * the health of the part of the ship before the attack if it hits. That means, when it returns 1,
 	 * that part of the ship is just wrecked.
 	 */
 	int attack(int index) {
+		System.out.println("attacking pos " + index + " contains " + board[index]);
 		if(board[index] == -1) {
 			return -1; // water!
 		}
@@ -74,24 +72,37 @@ public class Board {
 		}
 	}
 	
+	/**
+	* Function for testing, it attacks all the squares of the board
+	* in order once.
+	*/
 	void autoAttack () {
 		for(int i = 0; i < board.length; i++) {
 			System.out.println(attack(i));
 		}
 	}
 	
-	
-	
+	/**
+	* Finds the maximum in a given integer array.
+	* @ param t the array to search 
+	*/
 	int maxPos(Integer[] t) {
-		int max = 0;
+		int max = 0, maxcoord = 0;
 		for(int i = 0; i < t.length; i ++) {
 			if(t[i] > max) {
 				max = t[i];
+				maxcoord = i;
 			}
 		}
-		return max;
+		return maxcoord;
 	}
 	
+	/**
+	* Advances one square in the board from a given square in a given direction.
+	* @param pos the square
+	* @param direc the direction
+	* @ returns the square result of the advance.
+	*/
 	int advance(int pos, int direc) {
 		int row = posToRow(pos);
 		int col = posToCol(pos);
@@ -103,7 +114,7 @@ public class Board {
 			case 2:
 				return rcToPos(row, col + 1);
 			case 3:
-				return rcToPos(row + 1, col);
+				return rcToPos(row + 1, col + 1);
 			case 4:
 				return rcToPos(row + 1, col);
 			case 5:
@@ -117,8 +128,11 @@ public class Board {
 		}
 	}
 	
-	
-	
+	/**
+	* Checks if a position is within the board.
+	* @param pos position to check
+	* @returns true if the position is inside, false otherwise.
+	*/
 	boolean checkBorders(int pos) {
 		int row = posToRow(pos);
 		int col = posToCol(pos);
@@ -148,28 +162,28 @@ public class Board {
 	}*/
 	
 	
-	
 	void deletePos(int pos, int[] t, int limit) {
+		System.out.println("removing pos " + pos + " contains " + t[pos]);
 		while(pos < limit - 1) {
 			t[pos] = t[++pos];
 		}
 	}
 	
 	void deletePos(int pos,int quantity, int[] t, int limit) {
+		
 		while(pos < limit - 1) {
 			t[pos] = t[pos + quantity];
 		}
 	}
 	
 	int extractPos(int pos, int[] t, int limit) {
+		System.out.println("extracting pos " + pos);
 		int temp = t[pos];
 		while(pos < limit - 1) {
 			t[pos] = t[++pos];
 		}
 		return temp;
 	}
-	
-	
 	
 	void printArray(int[] t) {
 		for(int i = 0; i < t.length; i ++) {
@@ -178,9 +192,11 @@ public class Board {
 		System.out.println();
 	}
 	
-	int dicotomicSearch(int[] t, int v) {
-		int a = 0, b = t.length, m = 0;
-		while(a < b) {
+	int dicotomicSearch(int[] t, int v, int limit) {
+		printArray(t);
+		int a = 0, b = limit, m = 0;
+		while(a < b - 1) {
+			System.out.println("a = " + a + " b = " + b + " m = " + m);
 			if(t[m] == v) {
 				return m;
 			}
@@ -206,6 +222,9 @@ public class Board {
 		//numberOfShips = 6;
 	}
 	
+	/**
+	* Puts a ship on the board and also in the linked list.
+	*/
 	void putShip(int size, int health) {
 		int trials = 0;
 		
@@ -230,6 +249,7 @@ public class Board {
 				while(direction < ndirections) {
 					dt[direction] = dt[++direction];
 				}
+				ndirections --;
 				direction = dt[r.nextInt(ndirections)];
 			 }
 			if(ndirections > 0) {
