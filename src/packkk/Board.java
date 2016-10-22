@@ -212,8 +212,8 @@ public class Board {
 	}
 	
 	void autoShips() {
-		putShip(4, 3);
-		putShip(3, 3);
+		putShip(4, 1);
+		putShip(3, 1);
 		putShip(3, 3);
 		putShip(2, 3);
 		putShip(2, 3);

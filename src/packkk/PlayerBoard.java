@@ -301,6 +301,244 @@ public class PlayerBoard extends Board
 
 	}
 	
+	/**
+	* Other version of intelAttack, in this case we will call 
+	* recursively to the function every time we find a <1 element
+	* of the board and cannot solve it by inverting the direction.
+	* This means that we have some positions in the board that are 0,
+	* but do not give a sunk. So: They could belong to another ship,
+	* different from the original one we found first, or else they
+	* could be part of that ship. But in such case it would be solved
+	* just by inverting the attack direction. That leaves only
+	* the possibility of they belonging to other ship, what means that
+	* the moment we found them we were in other directions different 
+	* from the one of the original ship, or also the ships could be 
+	* consecutive, in which case the second ship would be sunk instead of
+	* the original one, and the current algorithm wouldnt realize that,
+	* even ourselves will have much trouble to guess in certain cases,
+	* since there is no information about which ship was sunk. Unless
+	* we used a spy algorithm which seems rather unfair.
+	* we call then the function on the new position. Actually there is
+	* no need for recursion since we can just store the positions in
+	* a vector. If we invert direction and have no success then we
+	* extract the first position from the vector if its not empty. 
+	* From it we 
+	* choose a direction. But every time we must remember to delete the
+	* inverse of the direction where we came from. This means storing
+	* a new value of such direction somewhere. Every time we sink a ship
+	* we will look for the positions in the same direction on this vector.
+	* this is, we remove the positions of the sunk ship from the vector
+	* if some of them were there.
+	*/
+	void intelAttackRecursive() {
+		
+	}
+	
+	int[] zeroes;
+	int zerocount;
+	
+	void keepAttack() {
+		System.out.println("square is not 0 yet");
+		if(attack(attackingPos) == 0) { // if we just sank it
+			//zeroes[zerocount ++] = attackingPos;
+			System.out.println("square is 0 now. looking for attackingPos " + attackingPos);
+			deletePos(dicotomicSearch(squaresToAttack, attackingPos, remainingSquares), squaresToAttack, remainingSquares);
+			// we delete that position from the squares to attack
+			remainingSquares --;
+			//System.out.println("not sunk");
+			//int i = 0;
+			//while(i < 100) {
+			//System.out.println("not sunk");
+			//i++;
+			//}
+			if(sunk) {
+
+				//while(i < 10000) {
+				System.out.println("sunk");
+				if(sll.isEmpty()) {
+					System.out.println("Your navy is sunk. You lost!");
+					//return;
+				}
+				//deleteShipFromZeroes();
+				if(zerocount > 0) {
+					attackingPos = extractPos(zerocount - 1, zeroes, zerocount);
+					zerocount --;
+				}
+				else {
+					attackingPos = -1; 
+				}
+				//	i++;
+				lengthShip = 0;
+				//}
+				attackDirection = -2;
+				
+				dirinverted = false;
+				
+				sunk = false;
+			}
+			else {
+				System.out.println("not sunk");
+			}
+		}
+	}
+	
+	void intelAttackStoreZeros() {
+		if(attackingPos != -1) { // if we were attacking a square
+			if(board[attackingPos] > 0) { // if the square is not sunk yet
+				keepAttack();
+				/*System.out.println("square is not 0 yet");
+				if(attack(attackingPos) == 0) { // if we just sank it
+					zeroes[zerocount ++] = attackingPos;
+					System.out.println("square is 0 now. looking for attackingPos " + attackingPos);
+					deletePos(dicotomicSearch(squaresToAttack, attackingPos, remainingSquares), squaresToAttack, remainingSquares);
+					// we delete that position from the squares to attack
+					remainingSquares --;
+					//System.out.println("not sunk");
+					//int i = 0;
+					//while(i < 100) {
+					//System.out.println("not sunk");
+					//i++;
+					//}
+					if(sunk) {
+
+						//while(i < 10000) {
+						System.out.println("sunk");
+						deleteShipFromZeroes();
+						//	i++;
+						lengthShip = 0;
+						//}
+						attackDirection = -2;
+						attackingPos = -1; 
+						dirinverted = false;
+						if(sll.isEmpty()) {
+							System.out.println("Your navy is sunk. You lost!");
+						}
+						sunk = false;
+					}
+					else {
+						System.out.println("not sunk");
+					}
+				}*/
+			}
+			else {
+				//loop ++;
+				//if(loop > 8) {
+				//loop = 0;
+				//return;
+				//}
+				System.out.println("square is 0"); // problem with ships of strength 1
+				if(attackDirection > -1) {
+
+					int newPos = advance(attackingPos, attackDirection); // we advance in the current direction
+					System.out.println("advancing to square " + newPos);
+					if(checkBorders(newPos)) {
+						if(board[newPos] < 1) {
+							attack(newPos);
+							attackingPos = inipos;
+							if(!dirinverted) {
+								attackDirection = invertDirection(attackDirection);
+							}
+							else {	
+								attackDirection = -1;
+							}
+						}
+						else {
+							System.out.println("its good");
+
+							attackingPos = newPos;
+							keepAttack();
+							//lengthShip ++;
+						}
+					} 
+					else {
+						attackingPos = inipos;
+						if(!dirinverted) {
+							attackDirection = invertDirection(attackDirection);
+						}
+						else {	
+							attackDirection = -1;
+						}
+					}
+							
+				}
+				else { // we dont have an attack direction, its < 0
+					if(attackDirection == -2) {
+						System.out.println("we reset directions");
+						for(int i = 0; i < 8; i ++) {
+							attackDirections[i] = i;
+							nAtadir = 8;
+						}
+						attackDirection = -1;
+					}
+					System.out.println("choose a new direction");
+
+					//loop ++;
+					//if(loop > 8) {
+					//loop = 0;
+					//return;
+					//}
+
+					attackDirection = chooseDirection(attackingPos);
+					int newPos = advance(attackingPos, attackDirection);
+					if(!checkBorders(newPos)) {
+						attackDirection = -1;
+					}
+					else {
+						if(board[newPos] < 1) {
+							attack(newPos);
+							attackDirection = -1;
+						}
+						else {
+							attackingPos = newPos;
+							dirinverted = false;
+							keepAttack();
+						}
+						
+						//intelAttackStoreZeros();
+						//lengthShip ++;
+						
+					}
+				}
+			}
+
+		}
+		else { // we are not attacking a square, we look for one
+			
+			int pos = r.nextInt(remainingSquares);
+			int squareAttacked = squaresToAttack[pos];
+			if(board[squareAttacked] != -1) {
+				inipos = squareAttacked;
+			    attackingPos = squareAttacked;
+				keepAttack();
+				//loop = 0;
+			}
+			else {
+				attack(squareAttacked);
+				deletePos(pos, squaresToAttack, remainingSquares);
+				remainingSquares --;
+			}
+		}
+	}
+	/*
+	if(board[newPos] == 0) { // if we find 0
+		int poszero = dicotomicSearch(zeroes, newPos, zerocount);
+		if(poszero > -1) {
+			// this will cause an infinite loop unless
+		}
+	}
+	else {
+		//if(!attacked(newPos))
+		attack(newPos);
+	}*/
+	
+	void deleteShipFromZeroes(int currPos) {
+		// I just realised this is not feasible so easily. The last attack direction could not
+		// be the direction of the ship. This will happen only certain times, but those times
+		// we will have so much error.
+		
+		
+	}
+	
 	int invertDirection(int d) {
 		System.out.print("inverting direction from " + d);
 		dirinverted = true;

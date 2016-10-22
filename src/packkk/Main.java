@@ -16,16 +16,20 @@ public class Main {
 		System.out.println(pb.toString());
 		System.out.println("longest ship = " + pb.sll.longestAliveShip);
 		System.out.println("shortest ship = " + pb.sll.shortestAliveShip);
+		int numattacks = 0;
 		while(!pb.sll.isEmpty()) {
 			//pb.intelAttack();
-			pb.intelAttackDirInvert();
+			//pb.intelAttackDirInvert();
+			pb.intelAttackStoreZeros();
 			System.out.println(pb.toString());
+			numattacks ++;
 			//if(pb.loop > 8) {
 				//break;
 			//}
 		}
 		//pbb.autoAttack();
 		System.out.println(pb.toString());
+		System.out.println("done in " + numattacks + " attacks");
 	}
 
 }
